@@ -4,6 +4,6 @@ import kotlinx.coroutines.Job
 
 data class Task(
     val requestId: String,
-    val jobs: List<Job>,
-    val result: List<String>,
+    val statuses: ArrayList<String>,
+    val result: ArrayList<String>,
 )

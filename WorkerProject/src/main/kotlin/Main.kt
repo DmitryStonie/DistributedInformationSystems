@@ -1,17 +1,20 @@
 package org.example
 
 import org.example.core.HashCodeCracker
+import org.example.core.HashCodeCracker.Companion.alphabet
+import org.example.core.wordsgenerator.WordsGeneratorWrapper
+import org.paukov.combinatorics.CombinatoricsFactory.*
+import org.paukov.combinatorics.Generator
+import org.paukov.combinatorics.ICombinatoricsVector
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.web.client.RestClient
 
-fun main() {
-    println("Hello World!")
-    val customClient = RestClient.builder()
-        .baseUrl("https://example.com")
-        .defaultUriVariables(mapOf("variable" to "foo"))
-        .defaultHeader("My-Header", "Foo")
-        .defaultCookie("My-Cookie", "Bar")
-        .build()
-    HashCodeCracker(customClient).getWordsIterator(1, 1)
+@SpringBootApplication
+class RestServiceApplication
 
+fun main(args: Array<String>) {
+    SpringApplication.run(RestServiceApplication::class.java, *args)
+    println("Hello World!")
 
 }
