@@ -1,9 +1,9 @@
-package org.example.controllers
+package org.example.api.controllers
 
 import org.example.Greeting
-import org.example.requests.CrackHashRequest
-import org.example.responses.CrackHashResponse
-import org.example.responses.CrackStatusResponse
+import org.example.api.requests.CrackHashRequest
+import org.example.api.responses.CrackHashResponse
+import org.example.api.responses.CrackStatusResponse
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.atomic.AtomicLong
 
