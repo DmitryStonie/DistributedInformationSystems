@@ -1,4 +1,4 @@
 package org.example.api.requests
 
-class CrackHashStatusRequest {
-}
+@JvmRecord
+data class CrackHashStatusWorkerRequest(val requestId: String)

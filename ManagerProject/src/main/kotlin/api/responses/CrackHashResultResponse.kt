@@ -1,6 +1,5 @@
 package org.example.api.responses
 
-data class CrackHashResult(
-    val requestId: String,
-    val data: List<String>
+data class CrackHashResultResponse(
+    val status: String
 )

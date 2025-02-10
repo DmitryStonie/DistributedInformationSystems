@@ -5,7 +5,7 @@ sealed interface UserInput {
         val value: Int,
     ) {
         CrackHash(1),
-        GetCrackHashStatus(2),
+        CrackHashStatus(2),
     }
 
     val type: Int

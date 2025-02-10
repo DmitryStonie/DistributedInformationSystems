@@ -62,7 +62,7 @@ class HashCodeCracker(val client: RestClient) {
 
     fun getWordsIterator(numOfWorkers: Int, workerNum: Int){
         val vector: ICombinatoricsVector<String> = createVector(alphabet)
-        val gen: Generator<String> = createPermutationWithRepetitionGenerator(vector, 1)
+        val gen: Generator<String> = createPermutationWithRepetitionGenerator(vector, 2)
         for (perm in gen) {
             println(perm)
         }

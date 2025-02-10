@@ -1,5 +1,5 @@
 package org.example.core.ui
 
-class CrackHashInput(val hash: String, val maxLength: Int) : UserInput {
-    override val type: Int = UserInput.Type.CrackHash.value
+class CrackHashStatusInput(val id: String) : UserInput {
+    override val type: Int = UserInput.Type.CrackHashStatus.value
 }
