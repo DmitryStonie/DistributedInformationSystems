@@ -33,7 +33,7 @@ class ConsoleUserInterface {
     fun printResponse(response: CrackStatusResponse?) {
         if (response?.status == ResponseStatus.IN_PROGRESS.value) {
             println("Still in progress...")
-        } else if (response?.status == ResponseStatus.READY.value) {
+        } else if (response?.status == ResponseStatus.DONE.value) {
             println("Work done!\nResult: ${response.data}")
         } else if (response == null) {
             println("No response...")

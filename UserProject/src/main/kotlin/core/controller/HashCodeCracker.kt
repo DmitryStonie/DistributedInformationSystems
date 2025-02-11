@@ -46,8 +46,9 @@ class HashCodeCracker(val client: RestClient, val consoleUserInterface: ConsoleU
                     break
                 }
                 consoleUserInterface.printResponse(response)
-                if (response?.status == ResponseStatus.READY.value) {
+                if (response?.status == ResponseStatus.DONE.value) {
                     data = response.data
+                    println(data)
                     break
                 } else if (response?.status == ResponseStatus.IN_PROGRESS.value) {
                     delay(DELAY_TIME)

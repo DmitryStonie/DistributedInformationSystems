@@ -1,12 +1,8 @@
 package org.example.api.controllers
 
-import kotlinx.coroutines.Job
 import org.example.api.requests.CrackHashClientRequest
-import org.example.api.requests.CrackHashWorkerRequest
-import org.example.api.responses.CrackHashResponse
-import org.example.api.responses.CrackHashResult
-import org.example.api.responses.CrackHashResultResponse
-import org.example.api.responses.CrackStatusResponse
+import org.example.api.requests.CrackHashManagerRequest
+import org.example.api.responses.*
 import org.example.core.task.Task
 import org.example.core.task.TaskVault
 import org.springframework.web.bind.annotation.*
@@ -24,7 +20,7 @@ class CrackHashController {
         val id = counter.incrementAndGet().toString()
         val numOfWorkers = 1
         val client = RestClient.builder()
-            .baseUrl("https://example.com")
+            .baseUrl("https://example2.com")
             .defaultUriVariables(mapOf("variable" to "foo"))
             .defaultHeader("My-Header", "Foo")
             .defaultCookie("My-Cookie", "Bar")
@@ -32,45 +28,57 @@ class CrackHashController {
 
 
         val statuses = ArrayList<String>()
-        for(i in 1..numOfWorkers){
+        for (i in 1..numOfWorkers) {
             statuses.add("IN_PROGRESS")
-            client.post()
+            val response = client.post()
                 .uri(WORKER_CRACK_URL)
-                .body(CrackHashWorkerRequest(id, request.hash, request.maxLength,1, 1))
+                .body(CrackHashManagerRequest(id, request.hash, request.maxLength, 1, 1))
                 .retrieve()
-                .body<CrackHashResponse>()
+                .body<CrackHashWorkerResponse>()
+            if (response?.status == "OK") {
+                println("OK")
+            }
         }
-        taskVault.addTask(id, Task(id, statuses, ArrayList<String>()))
+        val task = Task(id, statuses, ArrayList<String>())
+        println("Added task ${task} after worker ok")
+        if(taskVault.getTask(id) == null){
+            taskVault.addTask(id, task)
+        }
 
         return CrackHashResponse(id)
     }
 
     @GetMapping("/api/hash/status")
     fun getStatus(@RequestParam(value = "requestId") requestId: String?): CrackStatusResponse {
-        if(requestId != null){
-            if(taskVault.getTask(requestId)?.statuses?.contains("IN_PROGRESS") == true){
-                CrackStatusResponse("IN_PROGRESS", null)
-            } else{
+        if (requestId != null) {
+            if (taskVault.getTask(requestId)?.statuses?.contains("IN_PROGRESS") == true) {
+                return CrackStatusResponse("IN_PROGRESS", null)
+            } else {
                 //if 1 error?
-                CrackStatusResponse("DONE", taskVault.getTask(requestId)?.result)
+                return CrackStatusResponse("DONE", taskVault.getTask(requestId)?.result)
             }
-        } else{
+        } else {
             //error
-            CrackStatusResponse("IN_PROGRESS", null)
+            return CrackStatusResponse("IN_PROGRESS", null)
         }
-        return CrackStatusResponse("IN_PROGRESS", arrayListOf("abcd"))
     }
 
     @PatchMapping("/internal/api/manager/hash/crack/request")
     fun receiveResult(@RequestBody response: CrackHashResult): CrackHashResultResponse {
-        val task =  taskVault.getTask(response.requestId)
+        var task = taskVault.getTask(response.requestId)
+        if (task == null) {
+            val statuses = ArrayList(generateSequence { "IN_PROGRESS" }.take(1).toList())
+            task = Task(response.requestId, statuses, ArrayList<String>())
+            taskVault.addTask(response.requestId, task)
+            println("Added task ${task} after worker done job")
+        }
+        task = taskVault.getTask(response.requestId)
         task?.statuses?.set(0, "DONE")
         task?.result?.addAll(response.data)
-        println(response.data)
         return CrackHashResultResponse("OK")
     }
 
-    companion object{
+    companion object {
         val WORKER_CRACK_URL = "http://localhost:8082/internal/api/worker/hash/crack/task"
     }
 
