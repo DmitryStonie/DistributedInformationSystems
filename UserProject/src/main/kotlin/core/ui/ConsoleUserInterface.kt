@@ -21,7 +21,7 @@ class ConsoleUserInterface {
             }
 
             2 -> {
-                println("Input id:\n")
+                println("Input id:")
                 val id = readln()
                 return CrackHashStatusInput(id)
             }

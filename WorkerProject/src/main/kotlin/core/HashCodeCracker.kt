@@ -1,8 +1,6 @@
 package org.example.core
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.example.core.wordsgenerator.WordsGeneratorWrapper
 import org.paukov.combinatorics.CombinatoricsFactory.createPermutationWithRepetitionGenerator
 import org.paukov.combinatorics.CombinatoricsFactory.createVector
@@ -13,7 +11,7 @@ import java.security.MessageDigest
 
 class HashCodeCracker() {
 
-    suspend fun run(hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int): List<String>? = withContext(Dispatchers.IO) {
+    fun run(hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int): Deferred<List<String>?> = CoroutineScope(Dispatchers.Default).async {
         val data = ArrayList<String>()
         launch {
             val gen = WordsGeneratorWrapper(alphabet, maxLength, numOfWorkers, workerNum)
@@ -25,19 +23,9 @@ class HashCodeCracker() {
                 word = gen.getNext()
             }
         }
-
-        return@withContext data
+        return@async data
     }
 
-    fun getWordsIterator(numOfWorkers: Int, workerNum: Int){
-        val numOfCombinations =  alphabet.size.toBigInteger()
-        val vector: ICombinatoricsVector<String> = createVector(alphabet)
-        val gen: Generator<String> = createPermutationWithRepetitionGenerator(vector, 2)
-
-        for (perm in gen) {
-            println(perm)
-        }
-    }
     fun md5(input:String): String {
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
