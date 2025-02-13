@@ -1,51 +1,48 @@
 package org.example.core.wordsgenerator
 
-import org.example.core.HashCodeCracker
 import org.paukov.combinatorics.*
-import java.math.BigDecimal
 import java.math.BigInteger
 
-class  WordsGeneratorWrapper(val alphabet: List<String>, val maxLength: Int, val numOfWorkers: Int, val workerNum: Int){
+class WordsGenerator(alphabet: List<String>, private val maxLength: Int, numOfWorkers: Int, workerNum: Int){
     private val vector: ICombinatoricsVector<String> = CombinatoricsFactory.createVector(alphabet)
-    private var numOfCombinations: BigInteger
+    private var numOfCombinations: BigInteger = 0.toBigInteger()
     private var currentStart: BigInteger
     private var currentEnd: BigInteger
     private var generators = ArrayList<Generator<String>>()
-    private var lastIndeces = ArrayList<BigInteger>()
+    private var lastIndexes = ArrayList<BigInteger>()
 
     private var currentGenerator: Iterator<ICombinatoricsVector<String>>
     private var currentIndex: BigInteger
     private var currentLastElementIndex: BigInteger
     private var currentGenIndex: BigInteger
     init {
-        numOfCombinations = 0.toBigInteger()
-        var tempNumOfPermutatuions = 1.toBigInteger()
+        var tempNumanPermutations = 1.toBigInteger()
         for(i in 1..maxLength){
-            tempNumOfPermutatuions *= alphabet.size.toBigInteger()
-            generators.add(CombinatoricsFactory.createPermutationWithRepetitionGenerator<String>(vector, i))
-            numOfCombinations += tempNumOfPermutatuions
-            lastIndeces.add(numOfCombinations)
+            tempNumanPermutations *= alphabet.size.toBigInteger()
+            generators.add(CombinatoricsFactory.createPermutationWithRepetitionGenerator(vector, i))
+            numOfCombinations += tempNumanPermutations
+            lastIndexes.add(numOfCombinations)
         }
         val partSize = numOfCombinations / numOfWorkers.toBigInteger()
-        if(workerNum == 1){
-            currentStart = 1.toBigInteger()
+        currentStart = if(workerNum == 1){
+            1.toBigInteger()
         } else{
-            currentStart = partSize * (workerNum - 1).toBigInteger() + 1.toBigInteger()
+            partSize * (workerNum - 1).toBigInteger() + 1.toBigInteger()
         }
-        if(workerNum != numOfWorkers) {
-            currentEnd = currentStart + partSize - 1.toBigInteger()
+        currentEnd = if(workerNum != numOfWorkers) {
+            currentStart + partSize - 1.toBigInteger()
         } else{
-            currentEnd = numOfCombinations
+            numOfCombinations
         }
     }
     init{
-        currentLastElementIndex = lastIndeces.find { it >= currentStart }!!
-        currentGenIndex = lastIndeces.indexOf(currentLastElementIndex).toBigInteger()
+        currentLastElementIndex = lastIndexes.find { it >= currentStart }!!
+        currentGenIndex = lastIndexes.indexOf(currentLastElementIndex).toBigInteger()
         currentGenerator = generators[currentGenIndex.toInt()].iterator()
-        if(currentGenIndex == 0.toBigInteger()){
-            currentIndex = 1.toBigInteger()
+        currentIndex = if(currentGenIndex == 0.toBigInteger()){
+            1.toBigInteger()
         } else{
-            currentIndex = lastIndeces[(currentGenIndex - 1.toBigInteger()).toInt()] + 1.toBigInteger()
+            lastIndexes[(currentGenIndex - 1.toBigInteger()).toInt()] + 1.toBigInteger()
         }
         var numOfIters = currentStart - currentIndex
         while(numOfIters > 0.toBigInteger()){
@@ -62,7 +59,7 @@ class  WordsGeneratorWrapper(val alphabet: List<String>, val maxLength: Int, val
             } else{
                 currentGenerator = generators[currentGenIndex.toInt() + 1].iterator()
                 currentGenIndex += 1.toBigInteger()
-                currentLastElementIndex = lastIndeces[currentGenIndex.toInt()]
+                currentLastElementIndex = lastIndexes[currentGenIndex.toInt()]
             }
         }
         if(currentIndex > currentEnd){

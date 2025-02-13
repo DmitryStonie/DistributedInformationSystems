@@ -1,9 +1,9 @@
-package api.responses
+package org.example.core.task
 
-enum class ResponseStatus(
+enum class TaskStatus(
     val value: String,
 ) {
     IN_PROGRESS("IN_PROGRESS"),
-    READY("READY"),
+    DONE("DONE"),
     ERROR("ERROR"),
 }

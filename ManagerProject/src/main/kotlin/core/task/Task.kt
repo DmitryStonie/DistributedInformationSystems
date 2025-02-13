@@ -1,9 +1,7 @@
 package org.example.core.task
 
-import kotlinx.coroutines.Job
-
 data class Task(
     val requestId: String,
-    val statuses: ArrayList<String>,
+    val statuses: ArrayList<TaskStatus>,
     val result: ArrayList<String>,
 )

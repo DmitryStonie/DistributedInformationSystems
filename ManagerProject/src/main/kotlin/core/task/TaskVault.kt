@@ -1,5 +1,8 @@
 package org.example.core.task
 
+import org.springframework.stereotype.Component
+
+@Component
 class TaskVault {
 
     private val vault = HashMap<String, Task>()
@@ -8,5 +11,12 @@ class TaskVault {
     }
     fun getTask(id: String): Task?{
         return vault[id]
+    }
+
+    fun createTask(id: String, numOfWorkers: String): Task{
+        val statuses = ArrayList(generateSequence { TaskStatus.IN_PROGRESS }.take(numOfWorkers.toInt()).toList())
+        val task = Task(id, statuses, ArrayList())
+        this.addTask(id, task)
+        return task
     }
 }

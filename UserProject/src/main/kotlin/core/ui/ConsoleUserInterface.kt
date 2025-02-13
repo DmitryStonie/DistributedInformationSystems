@@ -2,7 +2,9 @@ package org.example.core.ui
 
 import org.example.api.responses.CrackStatusResponse
 import org.example.api.responses.ResponseStatus
+import org.springframework.stereotype.Component
 
+@Component
 class ConsoleUserInterface {
     fun enterCommand(): UserInput {
         print(

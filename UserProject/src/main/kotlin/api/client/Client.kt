@@ -8,13 +8,23 @@ import org.example.api.requests.CrackHashRequest
 import org.example.api.responses.CrackHashResponse
 import org.example.api.responses.CrackStatusResponse
 import org.example.core.ui.CrackHashInput
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
+@Component
+class Client {
+    @Value("\${my.crackuri}")
+    lateinit var MANAGER_CRACK_URI: String
+    @Value("\${my.crackstatus}")
+    lateinit var MANAGER_STATUS_URI: String
 
-class Client(private val client: RestClient) {
+    private val client: RestClient = RestClient.builder().build()
+
     fun getStatus(id: String): Deferred<CrackStatusResponse?> = CoroutineScope(Dispatchers.Default).async {
         return@async client.get()
-            .uri(MANAGER_STATUS_URI + id)
+            .uri(MANAGER_STATUS_URI + "?requestId=" + id)
             .retrieve()
             .body<CrackStatusResponse>()
     }
@@ -25,9 +35,5 @@ class Client(private val client: RestClient) {
             .body(CrackHashRequest(input.hash, input.maxLength))
             .retrieve()
             .body<CrackHashResponse>()?.requestId
-    }
-    companion object {
-        const val MANAGER_CRACK_URI: String = "http://localhost:8080/api/hash/crack"
-        const val MANAGER_STATUS_URI: String = "http://localhost:8080/api/hash/status?requestId="
     }
 }
