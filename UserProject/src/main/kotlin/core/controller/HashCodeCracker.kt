@@ -1,5 +1,6 @@
 package org.example.core.controller
 
+import core.Client
 import kotlinx.coroutines.*
 import org.example.api.requests.CrackHashRequest
 import org.example.api.responses.CrackHashResponse
@@ -12,14 +13,14 @@ import org.example.core.ui.UserInput
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 
-class HashCodeCracker(val client: RestClient, val consoleUserInterface: ConsoleUserInterface) {
+class HashCodeCracker(val client: Client, val consoleUserInterface: ConsoleUserInterface) {
 
     suspend fun work() {
         while (true) {
             val userInput = consoleUserInterface.enterCommand()
             when (userInput) {
                 is CrackHashInput -> CoroutineScope(Dispatchers.Default).launch {
-                    val id = sendCrackRequest(userInput).await()
+                    val id = client.sendCrackRequest(userInput).await()
                     if (id != null) {
                         println("requestId: ${id}")
                         println(getCrackResult(id).await())
@@ -29,32 +30,19 @@ class HashCodeCracker(val client: RestClient, val consoleUserInterface: ConsoleU
                 }
 
                 is CrackHashStatusInput -> CoroutineScope(Dispatchers.Default).launch {
-                    val response = getStatus(userInput.id).await()
-                    if (response != null) println(response.status) else println("No response")
+                    val response = client.getStatus(userInput.id).await()
+                    if (response != null) println("Status of job with id ${userInput.id} is ${response.status}") else println(
+                        "No response"
+                    )
                 }
             }
         }
     }
 
-    fun getStatus(id: String): Deferred<CrackStatusResponse?> = CoroutineScope(Dispatchers.Default).async {
-        return@async client.get()
-            .uri(MANAGER_STATUS_URI + id)
-            .retrieve()
-            .body<CrackStatusResponse>()
-    }
-
-    fun sendCrackRequest(input: CrackHashInput): Deferred<String?> = CoroutineScope(Dispatchers.Default).async {
-        return@async client.post()
-            .uri(MANAGER_CRACK_URI)
-            .body(CrackHashRequest(input.hash, input.maxLength))
-            .retrieve()
-            .body<CrackHashResponse>()?.requestId
-    }
-
     fun getCrackResult(id: String): Deferred<List<String>?> = CoroutineScope(Dispatchers.Default).async {
         var data: List<String>? = null
         while (true) {
-            val response = getStatus(id).await()
+            val response = client.getStatus(id).await()
             if (response?.status == ResponseStatus.DONE.value) {
                 data = response.data
                 break
