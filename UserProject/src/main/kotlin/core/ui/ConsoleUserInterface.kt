@@ -30,15 +30,29 @@ class ConsoleUserInterface {
         }
     }
 
-    fun printResponse(response: CrackStatusResponse?) {
+    fun printResponse(response: CrackStatusResponse?, id: String) {
         if (response?.status == ResponseStatus.IN_PROGRESS.value) {
-            println("Still in progress...")
+            println("Work with id $id still in progress...")
         } else if (response?.status == ResponseStatus.DONE.value) {
-            println("Work done!\nResult: ${response.data}")
+            printCrackResult(response.data, id)
+        } else if (response?.status == ResponseStatus.ERROR.value){
+            println("Work with id $id not done due to error. Try again later.")
         } else if (response == null) {
-            println("No response...")
+            println("Work with id $id got no response...")
         } else {
-            println("Everything goddamn bad :(")
+            println("With work with id $id Everything goddamn bad :(")
         }
+    }
+
+    fun printId(id: String){
+        println("RequestId: $id")
+    }
+
+    fun printError(){
+        println("Fail. Try again later.")
+    }
+
+    fun printCrackResult(result: List<String>?, id: String){
+        println("Work with id $id done!\nResult: $result")
     }
 }
