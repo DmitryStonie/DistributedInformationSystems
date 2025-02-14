@@ -35,7 +35,7 @@ class ConsoleUserInterface {
     fun printResponse(response: CrackStatusResponse?, id: String) {
         if (response?.status == ResponseStatus.IN_PROGRESS.value) {
             println("Work with id $id still in progress...")
-        } else if (response?.status == ResponseStatus.DONE.value) {
+        } else if (response?.status == ResponseStatus.READY.value) {
             printCrackResult(response.data, id)
         } else if (response?.status == ResponseStatus.ERROR.value){
             println("Work with id $id not done due to error. Try again later.")

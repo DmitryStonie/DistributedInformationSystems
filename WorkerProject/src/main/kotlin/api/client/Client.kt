@@ -13,14 +13,14 @@ import org.springframework.web.client.body
 
 @Component
 class Client {
-    @Value("\${my.manager_result}")
-    lateinit var managerCrackUri: String
+    @Value("\${manager_url}")
+    lateinit var MANAGER_URL: String
 
     private val client: RestClient = RestClient.builder().build()
 
     fun sendResult(requestId: String, result: List<String>?, workerNum: Int): Deferred<CrackHashResultResponse?> = CoroutineScope(Dispatchers.Default).async{
         return@async client.patch()
-            .uri(managerCrackUri)
+            .uri(MANAGER_URL + "/internal/api/manager/hash/crack/request")
             .body(CrackHashResultRequest(requestId, result, workerNum))
             .retrieve()
             .body<CrackHashResultResponse>()

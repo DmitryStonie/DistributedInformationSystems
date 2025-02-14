@@ -5,18 +5,16 @@ import org.example.core.task.TaskStatus
 import org.example.api.client.Client
 import org.example.api.requests.CrackHashClientRequest
 import org.example.api.responses.*
-import org.example.core.task.Task
 import org.example.core.task.TaskVault
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 @RestController
 class CrackHashController(val client: Client, val taskVault: TaskVault) {
-    @Value("\${my.num_of_workers}")
-    lateinit var numberOfWorkers: String
+    @Value("\${environment['workers_url']}")
+    lateinit var WORKERS_URL: ArrayList<String>
 
     private val log = LoggerFactory.getLogger(CrackHashController::class.java)
 
@@ -32,12 +30,12 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
         val id = UUID.randomUUID().toString()
         scope.launch {
             launch {
-                for (i in 1..numberOfWorkers.toInt()) {
-                    client.sendWorkerCrackRequest(id, request.hash, request.maxLength, numberOfWorkers.toInt(), i)
+                for (i in 1..WORKERS_URL.size) {
+                    client.sendWorkerCrackRequest(WORKERS_URL[i], id, request.hash, request.maxLength, WORKERS_URL.size, i)
                         .await()
                 }
                 withContext(taskVaultContext) {
-                    taskVault.createTask(id, numberOfWorkers)
+                    taskVault.createTask(id, WORKERS_URL.size)
                 }
                 log.info("Added task with id $id")
             }
@@ -47,19 +45,19 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
 
     @GetMapping("/api/hash/status")
     fun getStatus(@RequestParam(value = "requestId") requestId: String?): CrackStatusResponse {
-        var response = CrackStatusResponse(TaskStatus.ERROR, null)
+        var response = CrackStatusResponse(TaskStatus.ERROR.value, null)
         scope.launch {
             launch(taskVaultContext) {
                 if (requestId != null && taskVault.getTask(requestId) != null) {
                     response =
                         if (taskVault.getTask(requestId)?.statuses?.contains(TaskStatus.IN_PROGRESS) == true) {
-                            CrackStatusResponse(TaskStatus.IN_PROGRESS, null)
-                        } else if (taskVault.getTask(requestId)?.statuses?.count { it == TaskStatus.DONE } == taskVault.getTask(
+                            CrackStatusResponse(TaskStatus.IN_PROGRESS.value, null)
+                        } else if (taskVault.getTask(requestId)?.statuses?.count { it == TaskStatus.READY } == taskVault.getTask(
                                 requestId
                             )?.statuses?.count()) {
-                            CrackStatusResponse(TaskStatus.DONE, taskVault.getTask(requestId)?.result)
+                            CrackStatusResponse(TaskStatus.READY.value, taskVault.getTask(requestId)?.result)
                         } else {
-                            CrackStatusResponse(TaskStatus.ERROR, null)
+                            CrackStatusResponse(TaskStatus.ERROR.value, null)
                         }
                 }
             }
@@ -73,9 +71,9 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
             launch(taskVaultContext) {
                 var task = taskVault.getTask(response.requestId)
                 if (task == null) {
-                    task = taskVault.createTask(response.requestId, numberOfWorkers)
+                    task = taskVault.createTask(response.requestId, WORKERS_URL.size)
                 }
-                task.statuses[response.workerNum - 1] = TaskStatus.DONE
+                task.statuses[response.workerNum - 1] = TaskStatus.READY
                 if (response.data != null) task.result.addAll(response.data)
             }
         }

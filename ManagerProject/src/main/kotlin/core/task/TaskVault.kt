@@ -13,8 +13,8 @@ class TaskVault {
         return vault[id]
     }
 
-    fun createTask(id: String, numOfWorkers: String): Task{
-        val statuses = ArrayList(generateSequence { TaskStatus.IN_PROGRESS }.take(numOfWorkers.toInt()).toList())
+    fun createTask(id: String, numOfWorkers: Int): Task{
+        val statuses = ArrayList(generateSequence { TaskStatus.IN_PROGRESS }.take(numOfWorkers).toList())
         val task = Task(id, statuses, ArrayList())
         this.addTask(id, task)
         return task

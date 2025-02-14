@@ -18,8 +18,8 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
 
     private val log = LoggerFactory.getLogger(Runner::class.java)
 
-    val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        println("Произошло исключение ${throwable.message}")
+    private final val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        println("Exception happened ${throwable.message}")
     }
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
     suspend fun work() {
@@ -52,7 +52,7 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
         val dataInner: List<String>?
         while (true) {
             val response = client.getStatus(id).await()
-            if (response?.status == ResponseStatus.DONE.value) {
+            if (response?.status == ResponseStatus.READY.value) {
                 dataInner = response.data
                 break
             } else if (response?.status == ResponseStatus.IN_PROGRESS.value) {

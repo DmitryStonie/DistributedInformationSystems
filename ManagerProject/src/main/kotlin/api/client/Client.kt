@@ -13,14 +13,11 @@ import org.springframework.web.client.body
 
 @Component
 class Client {
-    @Value("\${my.worker_crack_url}")
-    lateinit var workerCrackUrl: String
-
     private val client = RestClient.builder().build()
 
-    fun sendWorkerCrackRequest(id: String, hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int): Deferred<CrackHashWorkerResponse?> = CoroutineScope(Dispatchers.Default).async{
+    fun sendWorkerCrackRequest(workerUrl: String, id: String, hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int): Deferred<CrackHashWorkerResponse?> = CoroutineScope(Dispatchers.Default).async{
         return@async client.post()
-            .uri(workerCrackUrl)
+            .uri(workerUrl + "/internal/api/worker/hash/crack/task")
             .body(CrackHashManagerRequest(id, hash, maxLength, numOfWorkers, workerNum))
             .retrieve()
             .body<CrackHashWorkerResponse>()

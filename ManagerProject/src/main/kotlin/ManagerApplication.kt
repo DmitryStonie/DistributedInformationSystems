@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 
 
 @SpringBootApplication
-class WorkerApplication
+class ManagerApplication
 
 fun main(args: Array<String>) {
-    SpringApplication.run(WorkerApplication::class.java, *args)
+    SpringApplication.run(ManagerApplication::class.java, *args)
 }
