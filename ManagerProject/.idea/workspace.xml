@@ -5,22 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="01a1f82f-6469-4e51-9584-839ffaa1fcec" name="Changes" comment="то же самое">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/WorkerApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/ManagerApplication.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/api/client/Client.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/api/client/Client.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/api/controllers/CrackHashController.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/api/controllers/CrackHashController.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/api/responses/CrackStatusResponse.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/api/responses/CrackStatusResponse.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/core/task/TaskStatus.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/core/task/TaskStatus.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/core/task/TaskVault.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/core/task/TaskVault.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/gradlew" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/src/main/kotlin/api/client/Client.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/src/main/kotlin/api/client/Client.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/src/main/kotlin/api/responses/ResponseStatus.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/src/main/kotlin/api/responses/ResponseStatus.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/src/main/kotlin/core/ui/ConsoleUserInterface.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/src/main/kotlin/core/ui/ConsoleUserInterface.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/src/main/kotlin/core/worker/Runner.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/src/main/kotlin/core/worker/Runner.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserProject/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/../UserProject/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../WorkerProject/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/../WorkerProject/gradlew" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,9 +41,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -69,6 +55,7 @@
   "keyToString": {
     "Docker.Unnamed.executor": "Run",
     "Gradle.Build ManagerProject.executor": "Run",
+    "Gradle.ManagerProject [:ManagerApplicationKt.main()].executor": "Run",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
     "RequestMappingsPanelWidth0": "75",
@@ -100,7 +87,18 @@
       <recent name="api.requests" />
     </key>
   </component>
-  <component name="RunManager" selected="Docker.Unnamed">
+  <component name="RunManager" selected="Application.ManagerApp">
+    <configuration name="ManagerApp" type="Application" factoryName="Application">
+      <envs>
+        <env name="SPRING_APPLICATION_JSON" value="{&quot;server.port&quot;:8080,&quot;workers_url&quot;:&quot;http://localhost:8090&quot;}" />
+      </envs>
+      <option name="MAIN_CLASS_NAME" value="org.example.ManagerApplicationKt" />
+      <module name="ManagerProject.main" />
+      <option name="PROGRAM_PARAMETERS" value="--stacktrace" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ManagerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="ManagerProject.main" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.ManagerApplication" />
@@ -118,6 +116,7 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Application.ManagerApp" />
       <item itemvalue="Docker.Unnamed" />
       <item itemvalue="Spring Boot.ManagerApplication" />
     </list>
@@ -138,7 +137,9 @@
       <workItem from="1739162199177" duration="12065000" />
       <workItem from="1739201890189" duration="10549000" />
       <workItem from="1739282498689" duration="3707000" />
-      <workItem from="1739445985709" duration="7869000" />
+      <workItem from="1739445985709" duration="8606000" />
+      <workItem from="1739629176191" duration="9000" />
+      <workItem from="1739696971783" duration="10556000" />
     </task>
     <task id="LOCAL-00001" summary="че то ковыряюсь в api">
       <option name="closed" value="true" />
@@ -175,8 +176,18 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/src/main/kotlin/api/controllers/CrackHashController.kt</url>
-          <line>50</line>
+          <line>56</line>
           <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="kotlin-line">
+          <url>file://$PROJECT_DIR$/src/main/kotlin/ManagerApplication.kt</url>
+          <line>10</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot/3.4.2/b2514201ba6b838bd638a51619515501c5baefea/spring-boot-3.4.2.jar!/org/springframework/boot/SpringApplication.class</url>
+          <line>160</line>
+          <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

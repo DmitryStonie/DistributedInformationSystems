@@ -10,11 +10,17 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.util.*
+import kotlin.collections.HashMap
 
 @RestController
 class CrackHashController(val client: Client, val taskVault: TaskVault) {
-    @Value("\${environment['workers_url']}")
-    lateinit var WORKERS_URL: ArrayList<String>
+    @Value("\${workers_url}")
+    lateinit var WORKERS_URL_ENV: String
+
+
+    val WORKERS_URL by lazy {
+        WORKERS_URL_ENV.split(' ')
+    }
 
     private val log = LoggerFactory.getLogger(CrackHashController::class.java)
 
@@ -31,7 +37,7 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
         scope.launch {
             launch {
                 for (i in 1..WORKERS_URL.size) {
-                    client.sendWorkerCrackRequest(WORKERS_URL[i], id, request.hash, request.maxLength, WORKERS_URL.size, i)
+                    client.sendWorkerCrackRequest(WORKERS_URL[i-1], id, request.hash, request.maxLength, WORKERS_URL.size, i)
                         .await()
                 }
                 withContext(taskVaultContext) {
