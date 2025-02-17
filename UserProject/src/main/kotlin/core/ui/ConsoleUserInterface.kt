@@ -7,28 +7,33 @@ import org.springframework.stereotype.Component
 @Component
 class ConsoleUserInterface {
     fun enterCommand(): UserInput {
-        print(
-            "What do you want?\n" +
-                    "1. Send hash crack request\n" +
-                    "2. Get hash crack status\n"
-        )
-        val input = readln().toInt()
-        when (input) {
-            1 -> {
-                println("Input hash:")
-                val hash = readln()
-                println("Input max message length:")
-                val messageLength = readln().toInt()
-                return CrackHashInput(hash, messageLength)
-            }
+        try {
 
-            2 -> {
-                println("Input id:")
-                val id = readln()
-                return CrackHashStatusInput(id)
-            }
+            print(
+                "What do you want?\n" +
+                        "1. Send hash crack request\n" +
+                        "2. Get hash crack status\n"
+            )
+            val input = readln().toInt()
+            when (input) {
+                1 -> {
+                    println("Input hash:")
+                    val hash = readln()
+                    println("Input max message length:")
+                    val messageLength = readln().toInt()
+                    return CrackHashInput(hash, messageLength)
+                }
 
-            else -> throw Exception("Wrong input")
+                2 -> {
+                    println("Input id:")
+                    val id = readln()
+                    return CrackHashStatusInput(id)
+                }
+
+                else -> throw Exception("Wrong input")
+            }
+        } catch (e: Exception){
+            throw e
         }
     }
 

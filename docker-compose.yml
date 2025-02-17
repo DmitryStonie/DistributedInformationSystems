@@ -1,0 +1,19 @@
+services:
+  manager:
+    image: manager
+    build:
+      context: ./ManagerProject
+      dockerfile: ./Dockerfile
+    environment:
+        - SPRING_APPLICATION_JSON={"server.port":8080,"workers_url":"http://worker-1:8090"}
+    ports:
+      - "8080:8080"
+
+  worker-1:
+    image: worker
+    build:
+      context: ./WorkerProject
+      dockerfile: ./Dockerfile
+    environment:
+        - SPRING_APPLICATION_JSON={"server.port":8090,"manager_url":"http://manager:8080"}
+      

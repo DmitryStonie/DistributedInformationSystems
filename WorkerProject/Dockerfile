@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x gradlew
-
 RUN ./gradlew clean build -x test
 
-CMD ["java", "-jar", "./build/libs/ManagerProject-1.0-SNAPSHOT.jar"]
+CMD ["java", "-jar", "./build/libs/WorkerProject-1.0-SNAPSHOT.jar"]

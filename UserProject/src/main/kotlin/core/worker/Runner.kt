@@ -24,26 +24,30 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
     suspend fun work() {
         while (true) {
-            when (val userInput = consoleUserInterface.enterCommand()) {
-                is CrackHashInput -> scope.launch {
-                    launch {
-                        val id = client.sendCrackRequest(userInput).await()
-                        if (id != null) {
-                            consoleUserInterface.printId(id)
-                            val result = getCrackResult(id).await()
-                            consoleUserInterface.printCrackResult(result, id)
-                        } else {
-                            consoleUserInterface.printError()
+            try {
+                when (val userInput = consoleUserInterface.enterCommand()) {
+                    is CrackHashInput -> scope.launch {
+                        launch {
+                            val id = client.sendCrackRequest(userInput).await()
+                            if (id != null) {
+                                consoleUserInterface.printId(id)
+                                val result = getCrackResult(id).await()
+                                consoleUserInterface.printCrackResult(result, id)
+                            } else {
+                                consoleUserInterface.printError()
+                            }
+                        }
+                    }
+
+                    is CrackHashStatusInput -> scope.launch {
+                        launch {
+                            val response = client.getStatus(userInput.id).await()
+                            consoleUserInterface.printResponse(response, userInput.id)
                         }
                     }
                 }
-
-                is CrackHashStatusInput -> scope.launch {
-                    launch {
-                        val response = client.getStatus(userInput.id).await()
-                        consoleUserInterface.printResponse(response, userInput.id)
-                    }
-                }
+            } catch(e: Exception){
+                println("Exception occured: ${e.message}")
             }
         }
     }

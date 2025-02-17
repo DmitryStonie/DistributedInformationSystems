@@ -38,3 +38,7 @@ kotlin {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
+
+tasks.getByName<JavaExec>("bootRun") {
+    standardInput = System.`in`
+}
