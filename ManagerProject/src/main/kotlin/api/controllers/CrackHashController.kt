@@ -36,14 +36,25 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
         val id = UUID.randomUUID().toString()
         scope.launch {
             launch {
-                for (i in 1..WORKERS_URL.size) {
-                    client.sendWorkerCrackRequest(WORKERS_URL[i-1], id, request.hash, request.maxLength, WORKERS_URL.size, i)
-                        .await()
-                }
                 withContext(taskVaultContext) {
                     taskVault.createTask(id, WORKERS_URL.size)
                 }
-                log.info("Added task with id $id")
+                for (i in 1..WORKERS_URL.size) {
+                    val response = client.sendWorkerCrackRequest(WORKERS_URL[i-1], id, request.hash, request.maxLength, WORKERS_URL.size, i)
+                        .await()
+                    if(response?.status == "Ok"){
+                        launch {
+                            val result = client.checkTaskStatus(WORKERS_URL[i-1], id)
+                            if(result.await() == TaskStatus.ERROR)
+                                taskVault.getTask(id)?.statuses?.set(i-1, TaskStatus.ERROR)
+                        }
+                        log.info("Added task with id $id")
+                    }
+                    else{
+                        taskVault.getTask(id)?.statuses?.set(i-1, TaskStatus.ERROR)
+                        log.info("Added task with id $id and ERROR")
+                    }
+                }
             }
         }
         return CrackHashResponse(id)
@@ -52,7 +63,7 @@ class CrackHashController(val client: Client, val taskVault: TaskVault) {
     @GetMapping("/api/hash/status")
     fun getStatus(@RequestParam(value = "requestId") requestId: String?): CrackStatusResponse {
         var response = CrackStatusResponse(TaskStatus.ERROR.value, null)
-        scope.launch {
+        runBlocking {
             launch(taskVaultContext) {
                 if (requestId != null && taskVault.getTask(requestId) != null) {
                     response =

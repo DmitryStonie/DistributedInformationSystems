@@ -7,10 +7,11 @@ import org.example.core.HashCodeCracker
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
-@Component
+
 class Task(
     val client: Client,
-    val cracker: HashCodeCracker
+    val cracker: HashCodeCracker,
+    var status: TaskStatus
 ) {
     private val log = LoggerFactory.getLogger(Task::class.java)
     private final val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -20,8 +21,10 @@ class Task(
 
     suspend fun run(requestId: String, hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int) = scope.launch {
         launch {
+            log.info("Task $requestId in progress")
             val res = cracker.run(hash, maxLength, numOfWorkers, workerNum).await()
             log.info("Task $requestId counted result $res")
+            status = TaskStatus.READY
             var response = client.sendResult(requestId, res, workerNum).await()
             if(response?.status == CrackHashResultResponse.Companion.Status.OK){
                 log.info("Task $requestId result delivered")
