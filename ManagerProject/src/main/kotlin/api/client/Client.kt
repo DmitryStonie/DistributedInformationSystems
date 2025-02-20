@@ -1,5 +1,6 @@
 package org.example.api.client
 
+import com.rabbitmq.client.ConnectionFactory
 import kotlinx.coroutines.*
 import org.example.api.requests.CrackHashManagerRequest
 import org.example.api.requests.TaskStatusWorkerRequest
@@ -17,6 +18,22 @@ import org.springframework.web.client.body
 class Client {
     private val client = RestClient.builder().build()
     private val log = LoggerFactory.getLogger(Client::class.java)
+
+
+    fun send(){
+        val factory = ConnectionFactory()
+        factory.host = "localhost"
+        factory.newConnection().use { connection -> connection.createChannel().use { channel ->
+            channel.queueDeclare(MANAGER_QUEUE_NAME, false, false, false, null)
+            val message = "Hello World!"
+            channel.basicPublish("", MANAGER_QUEUE_NAME, null, message.toByteArray())
+            println(" [x] Sent '$message'")
+
+
+
+
+        } }
+    }
 
     fun sendWorkerCrackRequest(workerUrl: String, id: String, hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int): Deferred<CrackHashWorkerResponse?> = CoroutineScope(Dispatchers.Default).async{
         return@async client.post()
@@ -59,6 +76,8 @@ class Client {
 
     companion object {
         const val DELAY_TIME = 5000L
+        const val WORKERS_QUEUE_NAME = "workersQueue"
+        const val MANAGER_QUEUE_NAME = "managerQueue"
     }
 
 

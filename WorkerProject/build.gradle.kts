@@ -31,6 +31,9 @@ dependencies {
 
     //
     implementation("com.googlecode.combinatoricslib:combinatoricslib:2.3")
+
+    implementation("com.rabbitmq:amqp-client:5.25.0")
+
 }
 
 tasks.withType<Test> {
