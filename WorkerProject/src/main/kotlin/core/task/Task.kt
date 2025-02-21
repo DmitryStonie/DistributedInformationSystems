@@ -1,15 +1,13 @@
 package org.example.core.task
 
 import kotlinx.coroutines.*
-import org.example.api.client.Client
-import org.example.api.responses.CrackHashResultResponse
 import org.example.core.HashCodeCracker
+import org.example.rabbitmq.api.CustomMessageSender
+import org.example.rabbitmq.messages.CrackHashResponse
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 
 
 class Task(
-    val client: Client,
     val cracker: HashCodeCracker,
     var status: TaskStatus
 ) {
@@ -19,27 +17,30 @@ class Task(
     }
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
 
-    suspend fun run(requestId: String, hash: String, maxLength: Int, numOfWorkers: Int, workerNum: Int) = scope.launch {
+    suspend fun run(
+        sender: CustomMessageSender,
+        requestId: String,
+        hash: String,
+        maxLength: Int,
+        numOfWorkers: Int,
+        workerNum: Int
+    ) = scope.launch {
+        log.info("Task $requestId in progress")
+        status = TaskStatus.IN_PROGRESS
         launch {
-            log.info("Task $requestId in progress")
-            val res = cracker.run(hash, maxLength, numOfWorkers, workerNum).await()
-            log.info("Task $requestId counted result $res")
+            val result = cracker.run(hash, maxLength, numOfWorkers, workerNum).await()
+            log.info("Task $requestId counted result ${result}")
             status = TaskStatus.READY
-            var response = client.sendResult(requestId, res, workerNum).await()
-            if(response?.status == CrackHashResultResponse.Companion.Status.OK){
-                log.info("Task $requestId result delivered")
-            }else if (response?.status == CrackHashResultResponse.Companion.Status.BAD) {
-                while (response?.status == CrackHashResultResponse.Companion.Status.BAD) {
-                    log.info("Task got bad request while sending result")
-                    delay(DELAY)
-                    response = client.sendResult(requestId, res, workerNum).await()
-                }
+            sender.sendCrackHashResponse(CrackHashResponse(status.value, requestId, result))
+        }
+        launch {
+            while (status == TaskStatus.IN_PROGRESS) {
+                sender.sendCrackHashResponse(CrackHashResponse(status.value, requestId, null))
+                delay(DELAY)
             }
         }
     }
-
-    companion object{
-        const val DELAY = 1000L
+    companion object {
+        const val DELAY = 5000L
     }
-
 }

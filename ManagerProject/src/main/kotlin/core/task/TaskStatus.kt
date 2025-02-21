@@ -6,4 +6,5 @@ enum class TaskStatus(
     IN_PROGRESS("IN_PROGRESS"),
     READY("READY"),
     ERROR("ERROR"),
+    CREATED("CREATED")
 }

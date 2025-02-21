@@ -34,6 +34,8 @@ dependencies {
 
     implementation("com.rabbitmq:amqp-client:5.25.0")
 
+    implementation("org.springframework.amqp:spring-rabbit:3.2.3")
+
 }
 
 tasks.withType<Test> {

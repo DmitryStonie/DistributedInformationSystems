@@ -28,6 +28,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     implementation("com.rabbitmq:amqp-client:5.25.0")
+    implementation("org.springframework.amqp:spring-rabbit:3.2.3")
+    // MongoDB Kotlin driver dependency
+    implementation("org.springframework.data:spring-data-mongodb:4.4.3")
 }
 
 tasks.withType<Test> {

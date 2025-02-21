@@ -67,9 +67,6 @@ class WordsGenerator(alphabet: List<String>, private val maxLength: Int, numOfWo
         }
         val result = currentGenerator.next().vector
         currentIndex += 1.toBigInteger()
-        if(currentIndex % 10000000.toBigInteger() == BigInteger.ZERO){
-            print(currentIndex.toString() + " " + currentGenIndex.toString())
-        }
         return result.joinToString("")
     }
 
