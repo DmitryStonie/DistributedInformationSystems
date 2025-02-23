@@ -1,20 +1,24 @@
 package org.example
 
-import org.example.mongodb.entities.TasksRepository
+import org.example.core.task.Task
+import org.example.core.task.TaskUtil
+import org.example.core.task.TaskVault
+import org.example.rabbitmq.api.CustomMessageSender
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
-import org.springframework.amqp.core.TopicExchange
-import org.springframework.amqp.rabbit.connection.ConnectionFactory
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
+import org.springframework.context.event.EventListener
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.util.ErrorHandler
 
 
 @SpringBootApplication
@@ -58,8 +62,9 @@ class ManagerApplication{
         return BindingBuilder.bind(workersQueue()).to(workerExchange()).with(WORKER_ROUTING_KEY)
     }
 
+
     @Bean
-    fun rabbitTemplate(connectionFactory: ConnectionFactory): RabbitTemplate {
+    fun rabbitTemplate(connectionFactory: CachingConnectionFactory): RabbitTemplate {
         val rabbitTemplate = RabbitTemplate(connectionFactory)
         rabbitTemplate.messageConverter = producerJackson2MessageConverter()
         return rabbitTemplate
@@ -81,6 +86,7 @@ class ManagerApplication{
         val WORKER_ROUTING_KEY: String = "workers_routing_key"
     }
 }
+
 
 fun main(args: Array<String>) {
     SpringApplication.run(ManagerApplication::class.java, *args)

@@ -32,4 +32,11 @@ class TaskVault(val repository: TasksRepository) {
         repository.save(task)
         return task
     }
+
+    fun getTasksByStatus(taskStatus: TaskStatus): List<Task> {
+        val tasks = repository.findByStatus(taskStatus)
+        if(tasks == null)
+            return ArrayList<Task>()
+        return tasks
+    }
 }

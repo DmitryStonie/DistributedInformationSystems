@@ -41,8 +41,12 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
 
                     is CrackHashStatusInput -> scope.launch {
                         launch {
-                            val response = client.getStatus(userInput.id).await()
-                            consoleUserInterface.printResponse(response, userInput.id)
+                            try{
+                                val response = client.getStatus(userInput.id).await()
+                                consoleUserInterface.printResponse(response, userInput.id)
+                            } catch (e: Exception){
+                                println("manager died. try later manually.")
+                            }
                         }
                     }
                 }
@@ -53,18 +57,22 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
     }
 
     private fun getCrackResult(id: String): Deferred<List<String>?> = scope.async {
-        val dataInner: List<String>?
+        var dataInner: List<String>?
         while (true) {
-            val response = client.getStatus(id).await()
-            if (response?.status == ResponseStatus.READY.value) {
-                dataInner = response.data
-                break
-            } else if (response?.status == ResponseStatus.ERROR.value) {
-                dataInner = response.data
-                println("Status of Task $id is ERROR. Don't wait it.")
-                break
-            } else{
-                delay(DELAY_TIME)
+            try{
+                val response = client.getStatus(id).await()
+                if (response?.status == ResponseStatus.READY.value) {
+                    dataInner = response.data
+                    break
+                } else if (response?.status == ResponseStatus.ERROR.value) {
+                    dataInner = response.data
+                    println("Status of Task $id is ERROR. Don't wait it.")
+                    break
+                } else{
+                    delay(DELAY_TIME)
+                }
+            } catch (e: Exception){
+                delay(DELAY_TIME_DIED_MANAGER)
             }
         }
         return@async dataInner
@@ -72,6 +80,7 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
 
     companion object {
         const val DELAY_TIME: Long = 1000L
+        const val DELAY_TIME_DIED_MANAGER: Long = 10000L
     }
 
     override fun run(vararg args: String?) {
