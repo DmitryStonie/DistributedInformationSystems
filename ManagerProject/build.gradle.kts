@@ -31,6 +31,7 @@ dependencies {
     implementation("org.springframework.amqp:spring-rabbit:3.2.3")
     // MongoDB Kotlin driver dependency
     implementation("org.springframework.data:spring-data-mongodb:4.4.3")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.4.3")
 }
 
 tasks.withType<Test> {

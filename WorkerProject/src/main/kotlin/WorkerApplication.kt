@@ -1,9 +1,6 @@
 package org.example
 
-import org.springframework.amqp.core.Binding
-import org.springframework.amqp.core.BindingBuilder
-import org.springframework.amqp.core.Queue
-import org.springframework.amqp.core.TopicExchange
+import org.springframework.amqp.core.*
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
@@ -18,13 +15,13 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class WorkerApplication{
 
     @Bean
-    fun managerExchange(): TopicExchange {
-        return TopicExchange(MANAGER_EXCHANGE_NAME)
+    fun managerExchange(): DirectExchange {
+        return DirectExchange(MANAGER_EXCHANGE_NAME)
     }
 
     @Bean
-    fun workerExchange(): TopicExchange {
-        return TopicExchange(WORKER_EXCHANGE_NAME)
+    fun workerExchange(): DirectExchange {
+        return DirectExchange(WORKER_EXCHANGE_NAME)
     }
 
     @Bean

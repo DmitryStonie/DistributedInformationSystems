@@ -3,6 +3,7 @@ package org.example
 import org.example.mongodb.entities.TasksRepository
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
+import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.TopicExchange
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
@@ -20,19 +21,14 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableScheduling
 @EnableMongoRepositories
 class ManagerApplication{
-
-    @Autowired
-    val repository: TasksRepository? = null
-
-
     @Bean
-    fun managerExchange(): TopicExchange {
-        return TopicExchange(MANAGER_EXCHANGE_NAME)
+    fun managerExchange(): DirectExchange {
+        return DirectExchange(MANAGER_EXCHANGE_NAME)
     }
 
     @Bean
-    fun workerExchange(): TopicExchange {
-        return TopicExchange(WORKER_EXCHANGE_NAME)
+    fun workerExchange(): DirectExchange {
+        return DirectExchange(WORKER_EXCHANGE_NAME)
     }
 
     @Bean

@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import java.util.*
 
 
-interface TasksRepository : MongoRepository<Task?, String?> {
-    fun findById(id: UUID): Task?
+interface TasksRepository : MongoRepository<Task?, String?>{
+    fun findByRequestId(requestId: String): List<Task>?
+
 }

@@ -59,7 +59,11 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
             if (response?.status == ResponseStatus.READY.value) {
                 dataInner = response.data
                 break
-            } else if (response?.status == ResponseStatus.IN_PROGRESS.value) {
+            } else if (response?.status == ResponseStatus.ERROR.value) {
+                dataInner = response.data
+                println("Status of Task $id is ERROR. Don't wait it.")
+                break
+            } else{
                 delay(DELAY_TIME)
             }
         }

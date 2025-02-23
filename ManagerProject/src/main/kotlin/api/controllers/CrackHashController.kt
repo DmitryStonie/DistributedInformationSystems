@@ -6,10 +6,12 @@ import org.example.api.responses.CrackHashResponse
 import org.example.api.responses.CrackStatusResponse
 import org.example.core.task.Task
 import org.example.core.task.TaskStatus
+import org.example.core.task.TaskUtil
 import org.example.core.task.TaskVault
 import org.example.mongodb.entities.TasksRepository
 import org.example.rabbitmq.api.CustomMessageSender
 import org.example.rabbitmq.messages.CrackHashRequest
+import org.example.rabbitmq.messages.CrackHashStatusRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -19,14 +21,12 @@ import java.util.*
 
 @RestController
 class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMessageSender) {
-    @Autowired
-    private val repository: TasksRepository? = null
 
-    @Value("\${workers_url}")
-    lateinit var WORKERS_URL_ENV: String
+    @Value("\${workers_num}")
+    lateinit var WORKERS_NUM_STR: String
 
-    val WORKERS_URL by lazy {
-        WORKERS_URL_ENV.split(' ')
+    val WORKERS_NUM by lazy {
+        WORKERS_NUM_STR.toInt()
     }
 
     private val log = LoggerFactory.getLogger(CrackHashController::class.java)
@@ -41,26 +41,11 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
     @PostMapping("/api/hash/crack")
     fun crackHash(@RequestBody request: CrackHashClientRequest): CrackHashResponse {
         val id = UUID.randomUUID().toString()
-        lateinit var task: Task
         scope.launch {
             launch {
-
-                withContext(taskVaultContext) {
-                    task = taskVault.createTask(id, WORKERS_URL.size, request.maxLength, request.hash)
-                }
-                repository?.save(task)
-                for (i in 1..task.subtasks.size) {
-                    val message = CrackHashRequest(
-                        task.subtasks[i - 1].id.toString(),
-                        request.hash,
-                        request.maxLength,
-                        task.subtasks.size,
-                        i
-                    )
-                    messageSender.sendCrackHashRequest(message)
-                }
-                for (customer in repository!!.findAll()) {
-                    System.out.println(customer)
+                for(i in 1..WORKERS_NUM){
+                    val task = taskVault.createTask(id, WORKERS_NUM, i, request.maxLength, request.hash)
+                    TaskUtil.createAndWaitTask(task, taskVault, messageSender)
                 }
             }
         }
@@ -72,17 +57,19 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
         var response = CrackStatusResponse(TaskStatus.ERROR.value, null)
         runBlocking {
             launch(taskVaultContext) {
-                if (requestId != null && taskVault.getTask(requestId) != null) {
-                    val task = taskVault.getTask(requestId)
-                    val readyTasks = task!!.subtasks.filter { it.status == TaskStatus.READY }
-                    val inProgressTasks = task.subtasks.filter { it.status == TaskStatus.IN_PROGRESS }
+                if (requestId != null){
+                    val tasks = taskVault.getTasksByRequestId(requestId)
+                    //println("found ${tasks.size} tasks")
+                    val readyTasks = tasks.filter { it.status == TaskStatus.READY }
+                    val inProgressTasks = tasks.filter { it.status == TaskStatus.IN_PROGRESS }
+                    val createdTasks = tasks.filter { it.status == TaskStatus.CREATED }
                     response =
-                        if (inProgressTasks.size > 0) {
+                        if (inProgressTasks.size > 0 || createdTasks.size > 0) {
                             CrackStatusResponse(TaskStatus.IN_PROGRESS.value, null)
-                        } else if (readyTasks.size == task.subtasks.size) {
+                        } else if (readyTasks.size == tasks.size && tasks.size != 0) {
                             val result = ArrayList<String>()
-                            for (subtask in readyTasks) {
-                                subtask.result?.let { result.addAll(it) }
+                            for (task in readyTasks) {
+                                task.result?.let { result.addAll(it) }
                             }
                             CrackStatusResponse(TaskStatus.READY.value, result)
                         } else {

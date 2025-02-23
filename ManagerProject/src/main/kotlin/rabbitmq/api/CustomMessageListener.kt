@@ -11,28 +11,35 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 class CustomMessageListener(val taskVault: TaskVault, val messageSender: CustomMessageSender) {
     @RabbitListener(queues = arrayOf("workersQueue"))
     fun receiveTaskAccept(message: CrackHashResponse) {
-        val subtask = taskVault.getSubtask(message.requestId)
-        if(subtask == null){
-            println("subtask is null")
+        val task = taskVault.getTask(message.requestId)
+        if (task == null) {
+            println("task is null id ${message.requestId}")
             return
         }
-        println("${subtask.taskId}  ${subtask.id} ${subtask.status}")
+        println("${task.requestId}  ${task.id} ${message.status}")
         when (message.status) {
             TaskStatus.IN_PROGRESS.value -> {
-                subtask.status = TaskStatus.IN_PROGRESS
+                task.status = TaskStatus.IN_PROGRESS
+                task.isDied = false
+                taskVault.saveTask(task)
             }
 
             TaskStatus.ERROR.value -> {
-                subtask.status = TaskStatus.CREATED
-                val newWorkerId = (1..subtask.numOfWorkers).random()
-                val newMessage =
-                    CrackHashRequest(subtask.id.toString(), subtask.hash, subtask.maxLength, subtask.numOfWorkers, newWorkerId)
-                messageSender.sendCrackHashRequest(newMessage)
+                task.status = TaskStatus.ERROR
+                task.isDied = true
+                taskVault.saveTask(task)
             }
 
             TaskStatus.READY.value -> {
-                subtask.status = TaskStatus.READY
-                if (message.data != null) subtask.result = ArrayList(message.data)
+                task.status = TaskStatus.READY
+                task.isDied = false
+                if (message.data != null) {
+                    if (task.result == null) {
+                        task.result = ArrayList()
+                    }
+                    task.result!!.addAll(message.data)
+                }
+                taskVault.saveTask(task)
             }
 
             else -> {
