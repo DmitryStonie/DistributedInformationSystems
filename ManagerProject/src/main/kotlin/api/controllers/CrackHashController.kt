@@ -63,14 +63,13 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
                     val readyTasks = tasks.filter { it.status == TaskStatus.READY }
                     val inProgressTasks = tasks.filter { it.status == TaskStatus.IN_PROGRESS }
                     val createdTasks = tasks.filter { it.status == TaskStatus.CREATED }
-                    val notSendedTasks = tasks.filter { it.status == TaskStatus.NOT_SENDED }
                     response =
                         if (inProgressTasks.size > 0 || createdTasks.size > 0) {
                             CrackStatusResponse(TaskStatus.IN_PROGRESS.value, null)
-                        }else if(notSendedTasks.size > 0){
+                        }else if(tasks.size == 0){
                             CrackStatusResponse(TaskStatus.NOT_SENDED.value, null)
                         }
-                        else if (readyTasks.size == tasks.size && tasks.size != 0) {
+                        else if (readyTasks.size == tasks.size) {
                             val result = ArrayList<String>()
                             for (task in readyTasks) {
                                 task.result?.let { result.addAll(it) }
