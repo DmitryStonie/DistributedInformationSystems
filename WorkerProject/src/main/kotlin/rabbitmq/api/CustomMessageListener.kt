@@ -13,7 +13,7 @@ import org.example.rabbitmq.messages.CrackHashResponse
 import org.example.rabbitmq.messages.CrackHashStatusRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 
 
 @Service
@@ -25,22 +25,30 @@ class CustomMessageListener(val sender: CustomMessageSender, val taskVault: Task
     }
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
 
-    @RabbitListener(queues = arrayOf("managerQueue"))
+    @RabbitListener(queues = ["managerQueue"])
     fun receiveTaskRequest(message: CrackHashRequest) {
-        println("Received message and deserialized to: ${message}")
+        println("Received message and deserialized to: $message")
         scope.launch {
             launch {
                 val cracker = HashCodeCracker()
                 val task = Task(cracker, TaskStatus.IN_PROGRESS)
                 taskVault.addTask(message.requestId, task)
-                task.run(sender, message.requestId, message.hash, message.maxLength, message.numOfWorkers, message.workerNum)
+                task.run(
+                    sender,
+                    message.requestId,
+                    message.hash,
+                    message.maxLength,
+                    message.numOfWorkers,
+                    message.workerNum
+                )
             }
         }
         sender.sendCrackHashResponse(CrackHashResponse(TaskStatus.IN_PROGRESS.value, message.requestId, null))
     }
-    @RabbitListener(queues = arrayOf("managerStatusQueue"))
+
+    @RabbitListener(queues = ["managerStatusQueue"])
     fun receiveTaskStatus(message: CrackHashStatusRequest) {
-        println("Received message and deserialized to: ${message}")
+        log.info("Received message and deserialized to: $message")
         val task = taskVault.getTask(message.taskId)
         val status = task?.status?.value ?: TaskStatus.ERROR.value
         sender.sendCrackHashResponse(CrackHashResponse(status, message.taskId, null))

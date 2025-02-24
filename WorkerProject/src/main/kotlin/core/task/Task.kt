@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory
 
 
 class Task(
-    val cracker: HashCodeCracker,
+    private val cracker: HashCodeCracker,
     var status: TaskStatus
 ) {
     private val log = LoggerFactory.getLogger(Task::class.java)
-    private final val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         log.info("Exception happened ${throwable.message}")
     }
-    val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
+    private val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
 
     suspend fun run(
         sender: CustomMessageSender,
@@ -29,7 +29,7 @@ class Task(
         status = TaskStatus.IN_PROGRESS
         launch {
             val result = cracker.run(hash, maxLength, numOfWorkers, workerNum).await()
-            log.info("Task $requestId counted result ${result}")
+            log.info("Task $requestId counted result $result")
             status = TaskStatus.READY
             sender.sendCrackHashResponse(CrackHashResponse(status.value, requestId, result))
         }
@@ -40,6 +40,7 @@ class Task(
             }
         }
     }
+
     companion object {
         const val DELAY = 5000L
     }

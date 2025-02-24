@@ -64,14 +64,14 @@ class WorkerApplication{
     }
 
     companion object{
-        val MANAGER_EXCHANGE_NAME: String = "managerExchange"
-        val WORKER_EXCHANGE_NAME: String = "workerExchange"
-        val MANAGER_QUEUE_NAME: String = "managerQueue"
-        val MANAGER_STATUS_QUEUE_NAME: String = "managerStatusQueue"
-        val WORKER_QUEUE_NAME: String = "workersQueue"
-        val MANAGER_ROUTING_KEY: String = "manager_routing_key"
-        val MANAGER_STATUS_ROUTING_KEY: String = "manager_status_routing_key"
-        val WORKER_ROUTING_KEY: String = "workers_routing_key"
+        const val MANAGER_EXCHANGE_NAME: String = "managerExchange"
+        const val WORKER_EXCHANGE_NAME: String = "workerExchange"
+        const val MANAGER_QUEUE_NAME: String = "managerQueue"
+        const val MANAGER_STATUS_QUEUE_NAME: String = "managerStatusQueue"
+        const val WORKER_QUEUE_NAME: String = "workersQueue"
+        const val MANAGER_ROUTING_KEY: String = "manager_routing_key"
+        const val MANAGER_STATUS_ROUTING_KEY: String = "manager_status_routing_key"
+        const val WORKER_ROUTING_KEY: String = "workers_routing_key"
     }
 }
 
