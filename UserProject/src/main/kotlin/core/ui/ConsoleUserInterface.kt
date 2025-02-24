@@ -32,7 +32,7 @@ class ConsoleUserInterface {
 
                 else -> throw Exception("Wrong input")
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             throw e
         }
     }
@@ -42,7 +42,7 @@ class ConsoleUserInterface {
             println("Work with id $id still in progress...")
         } else if (response?.status == ResponseStatus.READY.value) {
             printCrackResult(response.data, id)
-        } else if (response?.status == ResponseStatus.ERROR.value){
+        } else if (response?.status == ResponseStatus.ERROR.value) {
             println("Work with id $id not done due to error. Try again later.")
         } else if (response == null) {
             println("Work with id $id got no response...")
@@ -51,15 +51,15 @@ class ConsoleUserInterface {
         }
     }
 
-    fun printId(id: String){
+    fun printId(id: String) {
         println("RequestId: $id")
     }
 
-    fun printError(){
+    fun printError() {
         println("Fail. Try again later.")
     }
 
-    fun printCrackResult(result: List<String>?, id: String){
+    fun printCrackResult(result: List<String>?, id: String) {
         println("Work with id $id done!\nResult: $result")
     }
 }

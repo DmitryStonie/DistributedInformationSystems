@@ -5,6 +5,5 @@ enum class ResponseStatus(
 ) {
     IN_PROGRESS("IN_PROGRESS"),
     READY("READY"),
-    ERROR("ERROR"),
-    NOT_SENDED("NOT_SENDED")
+    ERROR("ERROR")
 }

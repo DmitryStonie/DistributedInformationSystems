@@ -19,7 +19,7 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
     private val log = LoggerFactory.getLogger(Runner::class.java)
 
     private final val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        println("Exception happened ${throwable.message}")
+        log.info("Exception happened ${throwable.message}")
     }
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
     suspend fun work() {
@@ -41,17 +41,17 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
 
                     is CrackHashStatusInput -> scope.launch {
                         launch {
-                            try{
+                            try {
                                 val response = client.getStatus(userInput.id).await()
                                 consoleUserInterface.printResponse(response, userInput.id)
-                            } catch (e: Exception){
-                                println("manager died. try later manually.")
+                            } catch (e: Exception) {
+                                log.info("manager died. try later manually.")
                             }
                         }
                     }
                 }
-            } catch(e: Exception){
-                println("Exception occured: ${e.message}")
+            } catch (e: Exception) {
+                log.info("Exception occured: ${e.message}")
             }
         }
     }
@@ -59,7 +59,7 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
     private fun getCrackResult(id: String): Deferred<List<String>?> = scope.async {
         var dataInner: List<String>?
         while (true) {
-            try{
+            try {
                 val response = client.getStatus(id).await()
                 if (response?.status == ResponseStatus.READY.value) {
                     dataInner = response.data
@@ -68,10 +68,10 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
                     dataInner = response.data
                     println("Status of Task $id is ERROR. Don't wait it.")
                     break
-                } else{
+                } else {
                     delay(DELAY_TIME)
                 }
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 delay(DELAY_TIME_DIED_MANAGER)
             }
         }
