@@ -1,19 +1,14 @@
 package org.example.rabbitmq.api
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.example.core.HashCodeCracker
 import org.example.core.task.Task
 import org.example.core.task.TaskStatus
 import org.example.core.task.TaskVault
 import org.example.rabbitmq.messages.CrackHashRequest
-import org.example.rabbitmq.messages.CrackHashResponse
-import org.example.rabbitmq.messages.CrackHashStatusRequest
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Service
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.stereotype.Service
 
 
 @Service
@@ -26,32 +21,23 @@ class CustomMessageListener(val sender: CustomMessageSender, val taskVault: Task
     val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
 
     @RabbitListener(queues = ["managerQueue"])
-    fun receiveTaskRequest(message: CrackHashRequest) {
+    fun receiveTaskRequest(
+        message: CrackHashRequest
+    ) {
         println("Received message and deserialized to: $message")
-        scope.launch {
-            launch {
-                val cracker = HashCodeCracker()
-                val task = Task(cracker, TaskStatus.IN_PROGRESS)
-                taskVault.addTask(message.requestId, task)
-                task.run(
-                    sender,
-                    message.requestId,
-                    message.hash,
-                    message.maxLength,
-                    message.numOfWorkers,
-                    message.workerNum
-                )
-            }
+        val cracker = HashCodeCracker()
+        val task = Task(cracker, TaskStatus.IN_PROGRESS)
+        taskVault.addTask(message.requestId, task)
+        runBlocking { task.run(
+            sender,
+            message.requestId,
+            message.hash,
+            message.maxLength,
+            message.numOfWorkers,
+            message.workerNum
+        ).join()
         }
-        sender.sendCrackHashResponse(CrackHashResponse(TaskStatus.IN_PROGRESS.value, message.requestId, null))
     }
 
-    @RabbitListener(queues = ["managerStatusQueue"])
-    fun receiveTaskStatus(message: CrackHashStatusRequest) {
-        log.info("Received message and deserialized to: $message")
-        val task = taskVault.getTask(message.taskId)
-        val status = task?.status?.value ?: TaskStatus.ERROR.value
-        sender.sendCrackHashResponse(CrackHashResponse(status, message.taskId, null))
-    }
 
 }

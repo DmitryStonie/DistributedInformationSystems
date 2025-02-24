@@ -41,49 +41,8 @@ class TaskUtil(val taskVault: TaskVault, val messageSender: CustomMessageSender)
                     taskVault.saveTask(task)
                 }
             }
-            scope.launch {
-                waitTask(task, message, taskVault, messageSender)
-            }
         }
 
-        private suspend fun waitTask(
-            task: Task,
-            message: CrackHashRequest,
-            taskVault: TaskVault,
-            messageSender: CustomMessageSender
-        ) {
-            while (true) {
-                var savedTask = taskVault.getTask(task.id)!!
-                savedTask.isDied = true
-                taskVault.saveTask(savedTask)
-                delay(10000)
-                savedTask = taskVault.getTask(task.id)!!
-                if (savedTask.status == TaskStatus.NOT_SENDED) {
-                    log.info("send unsended task ${task.id} $message")
-                    CoroutineScope(Dispatchers.Default).launch {
-                        try {
-                            messageSender.sendCrackHashRequest(message)
-                        } catch (e: Exception) {
-                            log.error("rabbitmq still dead")
-                        }
-                    }
-                    continue
-                }
-                if (savedTask.status == TaskStatus.CREATED) {
-                    log.info("Created task not in progress")
-                    continue
-                }
-                if (savedTask.isDied || savedTask.status == TaskStatus.ERROR) {
-                    scope.launch {
-                        log.info("task ${task.id} died, creating new")
-                        createAndWaitTask(task, taskVault, messageSender)
-                    }
-                    break
-                } else if (savedTask.status == TaskStatus.READY) {
-                    break
-                }
-            }
-        }
     }
 
     @EventListener(ApplicationReadyEvent::class)

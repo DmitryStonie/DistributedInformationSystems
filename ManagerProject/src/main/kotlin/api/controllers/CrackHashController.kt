@@ -54,7 +54,6 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
             launch(taskVaultContext) {
                 if (requestId != null) {
                     val tasks = taskVault.getTasksByRequestId(requestId)
-                    log.info("found ${tasks.size} tasks")
                     val readyTasks = tasks.filter { it.status == TaskStatus.READY }
                     val inProgressTasks = tasks.filter { it.status == TaskStatus.IN_PROGRESS }
                     val createdTasks = tasks.filter { it.status == TaskStatus.CREATED }

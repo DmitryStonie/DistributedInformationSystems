@@ -1,11 +1,14 @@
 package org.example.rabbitmq.api
 
+import com.rabbitmq.client.Channel
 import org.example.core.task.TaskStatus
 import org.example.core.task.TaskVault
 import org.example.rabbitmq.messages.CrackHashResponse
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.amqp.support.AmqpHeaders
+import org.springframework.messaging.handler.annotation.Header
 
 @Service
 class CustomMessageListener(val taskVault: TaskVault) {

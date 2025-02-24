@@ -33,15 +33,6 @@ class Task(
             status = TaskStatus.READY
             sender.sendCrackHashResponse(CrackHashResponse(status.value, requestId, result))
         }
-        launch {
-            while (status == TaskStatus.IN_PROGRESS) {
-                sender.sendCrackHashResponse(CrackHashResponse(status.value, requestId, null))
-                delay(DELAY)
-            }
-        }
     }
 
-    companion object {
-        const val DELAY = 5000L
-    }
 }

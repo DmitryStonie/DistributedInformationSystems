@@ -1,6 +1,8 @@
 package org.example
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.amqp.core.*
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory
 import org.springframework.amqp.rabbit.connection.ConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
@@ -28,10 +30,7 @@ class WorkerApplication{
     fun managerQueue(): Queue {
         return Queue(MANAGER_QUEUE_NAME)
     }
-    @Bean
-    fun managerStatusQueue(): Queue {
-        return Queue(MANAGER_STATUS_QUEUE_NAME)
-    }
+
     @Bean
     fun workersQueue(): Queue {
         return Queue(WORKER_QUEUE_NAME)
@@ -41,10 +40,6 @@ class WorkerApplication{
     fun declareBindingManager(): Binding {
         return BindingBuilder.bind(managerQueue()).to(managerExchange()).with(MANAGER_ROUTING_KEY)
     }
-    @Bean
-    fun declareBindingStatusManager(): Binding {
-        return BindingBuilder.bind(managerStatusQueue()).to(managerExchange()).with(MANAGER_STATUS_ROUTING_KEY)
-    }
 
     @Bean
     fun declareBindingWorkers(): Binding {
@@ -52,8 +47,23 @@ class WorkerApplication{
     }
 
     @Bean
+    fun rabbitListenerContainerFactory(
+        connectionFactory: ConnectionFactory?,
+        objectMapper: ObjectMapper?
+    ): SimpleRabbitListenerContainerFactory {
+        val factory = SimpleRabbitListenerContainerFactory()
+        factory.setConnectionFactory(connectionFactory)
+        factory.setMessageConverter(Jackson2JsonMessageConverter())
+        factory.setPrefetchCount(5)
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO)
+        return factory
+    }
+
+
+    @Bean
     fun rabbitTemplate(connectionFactory: ConnectionFactory): RabbitTemplate {
         val rabbitTemplate = RabbitTemplate(connectionFactory)
+        rabbitTemplate.containerAckMode(AcknowledgeMode.AUTO)
         rabbitTemplate.messageConverter = producerJackson2MessageConverter()
         return rabbitTemplate
     }
@@ -67,10 +77,8 @@ class WorkerApplication{
         const val MANAGER_EXCHANGE_NAME: String = "managerExchange"
         const val WORKER_EXCHANGE_NAME: String = "workerExchange"
         const val MANAGER_QUEUE_NAME: String = "managerQueue"
-        const val MANAGER_STATUS_QUEUE_NAME: String = "managerStatusQueue"
         const val WORKER_QUEUE_NAME: String = "workersQueue"
         const val MANAGER_ROUTING_KEY: String = "manager_routing_key"
-        const val MANAGER_STATUS_ROUTING_KEY: String = "manager_status_routing_key"
         const val WORKER_ROUTING_KEY: String = "workers_routing_key"
     }
 }
