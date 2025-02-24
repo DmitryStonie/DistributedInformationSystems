@@ -5,10 +5,7 @@ import org.example.api.controllers.CrackHashController
 import org.example.rabbitmq.api.CustomMessageSender
 import org.example.rabbitmq.messages.CrackHashRequest
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.ApplicationListener
-import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
@@ -18,10 +15,10 @@ class TaskUtil(val taskVault: TaskVault, val messageSender: CustomMessageSender)
     companion object {
         private val log = LoggerFactory.getLogger(CrackHashController::class.java)
 
-        private final val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
             log.info("Exception happened ${throwable.message}")
         }
-        val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
+        private val scope = CoroutineScope(Dispatchers.Default + coroutineExceptionHandler)
 
         fun createAndWaitTask(
             task: Task,
@@ -39,7 +36,7 @@ class TaskUtil(val taskVault: TaskVault, val messageSender: CustomMessageSender)
                 try {
                     messageSender.sendCrackHashRequest(message)
                 } catch (e: Exception) {
-                    println("rabbitmq is unavailable.")
+                    log.info("rabbitmq is unavailable.")
                     task.status = TaskStatus.NOT_SENDED
                     taskVault.saveTask(task)
                 }
@@ -49,38 +46,36 @@ class TaskUtil(val taskVault: TaskVault, val messageSender: CustomMessageSender)
             }
         }
 
-        suspend fun waitTask(
+        private suspend fun waitTask(
             task: Task,
             message: CrackHashRequest,
             taskVault: TaskVault,
             messageSender: CustomMessageSender
         ) {
             while (true) {
-                println("start")
                 var savedTask = taskVault.getTask(task.id)!!
                 savedTask.isDied = true
                 taskVault.saveTask(savedTask)
                 delay(10000)
                 savedTask = taskVault.getTask(task.id)!!
                 if (savedTask.status == TaskStatus.NOT_SENDED) {
-                    println("send unsended task ${task.id} ${message}")
-                    CoroutineScope(Dispatchers.Default).launch{
-                        try{
+                    log.info("send unsended task ${task.id} $message")
+                    CoroutineScope(Dispatchers.Default).launch {
+                        try {
                             messageSender.sendCrackHashRequest(message)
-                        } catch (e: Exception){
-                            println("rabbitmq still dead")
+                        } catch (e: Exception) {
+                            log.error("rabbitmq still dead")
                         }
                     }
-                    println("continue")
                     continue
                 }
                 if (savedTask.status == TaskStatus.CREATED) {
-                    println("Created task not in progress")
+                    log.info("Created task not in progress")
                     continue
                 }
                 if (savedTask.isDied || savedTask.status == TaskStatus.ERROR) {
                     scope.launch {
-                        println("task ${task.id} died, creating new")
+                        log.info("task ${task.id} died, creating new")
                         createAndWaitTask(task, taskVault, messageSender)
                     }
                     break
@@ -92,20 +87,18 @@ class TaskUtil(val taskVault: TaskVault, val messageSender: CustomMessageSender)
     }
 
     @EventListener(ApplicationReadyEvent::class)
-        fun onApplicationEvent() {
-        println("aasd")
+    fun onApplicationEvent() {
         val tasks = taskVault.getTasksByStatus(TaskStatus.NOT_SENDED)
-        println("got unsended atasks ${tasks.size}")
-        for(task in tasks){
+        for (task in tasks) {
             createAndWaitTask(task, taskVault, messageSender)
         }
         val createdTasks = taskVault.getTasksByStatus(TaskStatus.CREATED)
-        for(task in createdTasks){
+        for (task in createdTasks) {
             createAndWaitTask(task, taskVault, messageSender)
         }
         val inProgressTasks = taskVault.getTasksByStatus(TaskStatus.IN_PROGRESS)
-        for(task in inProgressTasks){
-            if(task.isDied == true)
+        for (task in inProgressTasks) {
+            if (task.isDied)
                 createAndWaitTask(task, taskVault, messageSender)
         }
     }

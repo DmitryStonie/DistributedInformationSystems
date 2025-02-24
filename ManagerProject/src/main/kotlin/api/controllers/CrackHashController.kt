@@ -4,16 +4,11 @@ import kotlinx.coroutines.*
 import org.example.api.requests.CrackHashClientRequest
 import org.example.api.responses.CrackHashResponse
 import org.example.api.responses.CrackStatusResponse
-import org.example.core.task.Task
 import org.example.core.task.TaskStatus
 import org.example.core.task.TaskUtil
 import org.example.core.task.TaskVault
-import org.example.mongodb.entities.TasksRepository
 import org.example.rabbitmq.api.CustomMessageSender
-import org.example.rabbitmq.messages.CrackHashRequest
-import org.example.rabbitmq.messages.CrackHashStatusRequest
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -43,7 +38,7 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
         val id = UUID.randomUUID().toString()
         scope.launch {
             launch {
-                for(i in 1..WORKERS_NUM){
+                for (i in 1..WORKERS_NUM) {
                     val task = taskVault.createTask(id, WORKERS_NUM, i, request.maxLength, request.hash)
                     TaskUtil.createAndWaitTask(task, taskVault, messageSender)
                 }
@@ -57,19 +52,18 @@ class CrackHashController(val taskVault: TaskVault, val messageSender: CustomMes
         var response = CrackStatusResponse(TaskStatus.ERROR.value, null)
         runBlocking {
             launch(taskVaultContext) {
-                if (requestId != null){
+                if (requestId != null) {
                     val tasks = taskVault.getTasksByRequestId(requestId)
-                    println("found ${tasks.size} tasks")
+                    log.info("found ${tasks.size} tasks")
                     val readyTasks = tasks.filter { it.status == TaskStatus.READY }
                     val inProgressTasks = tasks.filter { it.status == TaskStatus.IN_PROGRESS }
                     val createdTasks = tasks.filter { it.status == TaskStatus.CREATED }
                     response =
-                        if (inProgressTasks.size > 0 || createdTasks.size > 0) {
+                        if (inProgressTasks.isNotEmpty() || createdTasks.isNotEmpty()) {
                             CrackStatusResponse(TaskStatus.IN_PROGRESS.value, null)
-                        }else if(tasks.size == 0){
+                        } else if (tasks.isEmpty()) {
                             CrackStatusResponse(TaskStatus.NOT_SENDED.value, null)
-                        }
-                        else if (readyTasks.size == tasks.size) {
+                        } else if (readyTasks.size == tasks.size) {
                             val result = ArrayList<String>()
                             for (task in readyTasks) {
                                 task.result?.let { result.addAll(it) }

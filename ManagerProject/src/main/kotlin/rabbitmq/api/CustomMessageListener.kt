@@ -2,18 +2,20 @@ package org.example.rabbitmq.api
 
 import org.example.core.task.TaskStatus
 import org.example.core.task.TaskVault
-import org.example.rabbitmq.messages.CrackHashRequest
 import org.example.rabbitmq.messages.CrackHashResponse
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 
 @Service
-class CustomMessageListener(val taskVault: TaskVault, val messageSender: CustomMessageSender) {
-    @RabbitListener(queues = arrayOf("workersQueue"))
+class CustomMessageListener(val taskVault: TaskVault) {
+    private val log = LoggerFactory.getLogger(CustomMessageSender::class.java)
+
+    @RabbitListener(queues = ["workersQueue"])
     fun receiveTaskAccept(message: CrackHashResponse) {
         val task = taskVault.getTask(message.requestId)
         if (task == null) {
-            println("task is null id ${message.requestId}")
+            log.info("task is null id ${message.requestId}")
             return
         }
         println("${task.requestId}  ${task.id} ${message.status}")
@@ -43,7 +45,7 @@ class CustomMessageListener(val taskVault: TaskVault, val messageSender: CustomM
             }
 
             else -> {
-                println("error in task status")
+                log.info("error in task status")
             }
         }
     }

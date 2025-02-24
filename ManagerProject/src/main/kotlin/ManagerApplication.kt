@@ -1,9 +1,5 @@
 package org.example
 
-import org.example.core.task.Task
-import org.example.core.task.TaskUtil
-import org.example.core.task.TaskVault
-import org.example.rabbitmq.api.CustomMessageSender
 import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
@@ -13,18 +9,15 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
-import org.springframework.context.event.EventListener
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.util.ErrorHandler
 
 
 @SpringBootApplication
 @EnableScheduling
 @EnableMongoRepositories
-class ManagerApplication{
+class ManagerApplication {
     @Bean
     fun managerExchange(): DirectExchange {
         return DirectExchange(MANAGER_EXCHANGE_NAME)
@@ -39,10 +32,7 @@ class ManagerApplication{
     fun managerQueue(): Queue {
         return Queue(MANAGER_QUEUE_NAME)
     }
-    @Bean
-    fun managerStatusQueue(): Queue {
-        return Queue(MANAGER_STATUS_QUEUE_NAME)
-    }
+
     @Bean
     fun workersQueue(): Queue {
         return Queue(WORKER_QUEUE_NAME)
@@ -51,10 +41,6 @@ class ManagerApplication{
     @Bean
     fun declareBindingManager(): Binding {
         return BindingBuilder.bind(managerQueue()).to(managerExchange()).with(MANAGER_ROUTING_KEY)
-    }
-    @Bean
-    fun declareBindingStatusManager(): Binding {
-        return BindingBuilder.bind(managerStatusQueue()).to(managerExchange()).with(MANAGER_STATUS_ROUTING_KEY)
     }
 
     @Bean
@@ -75,18 +61,15 @@ class ManagerApplication{
         return Jackson2JsonMessageConverter()
     }
 
-    companion object{
-        val MANAGER_EXCHANGE_NAME: String = "managerExchange"
-        val WORKER_EXCHANGE_NAME: String = "workerExchange"
-        val MANAGER_QUEUE_NAME: String = "managerQueue"
-        val MANAGER_STATUS_QUEUE_NAME: String = "managerStatusQueue"
-        val WORKER_QUEUE_NAME: String = "workersQueue"
-        val MANAGER_ROUTING_KEY: String = "manager_routing_key"
-        val MANAGER_STATUS_ROUTING_KEY: String = "manager_status_routing_key"
-        val WORKER_ROUTING_KEY: String = "workers_routing_key"
+    companion object {
+        const val MANAGER_EXCHANGE_NAME: String = "managerExchange"
+        const val WORKER_EXCHANGE_NAME: String = "workerExchange"
+        const val MANAGER_QUEUE_NAME: String = "managerQueue"
+        const val WORKER_QUEUE_NAME: String = "workersQueue"
+        const val MANAGER_ROUTING_KEY: String = "manager_routing_key"
+        const val WORKER_ROUTING_KEY: String = "workers_routing_key"
     }
 }
-
 
 fun main(args: Array<String>) {
     SpringApplication.run(ManagerApplication::class.java, *args)
