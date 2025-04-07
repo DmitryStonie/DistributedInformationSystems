@@ -53,11 +53,11 @@ class Runner(private val client: Client, private val consoleUserInterface: Conso
     }
 
     private fun getCrackResult(id: String): Deferred<List<String>?> = scope.async {
-        val dataInner: List<String>?
+        var dataInner: List<String> = ArrayList()
         while (true) {
             val response = client.getStatus(id).await()
             if (response?.status == ResponseStatus.READY.value) {
-                dataInner = response.data
+                dataInner = response.data!!
                 break
             } else if (response?.status == ResponseStatus.IN_PROGRESS.value) {
                 delay(DELAY_TIME)
